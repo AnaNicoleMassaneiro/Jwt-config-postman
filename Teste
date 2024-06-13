@@ -1,0 +1,28 @@
+// Função para decodificar JWT
+function decodeJWT(token) {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
+// Supondo que o seu Bearer token está salvo em uma variável de ambiente chamada "bearerToken"
+const bearerToken = pm.environment.get("bearerToken");
+
+if (bearerToken) {
+    // Decodificar o token
+    const decodedToken = decodeJWT(bearerToken);
+
+    // Extrair as informações necessárias
+    const xStatelessOpen = decodedToken['x-stateless-open'];
+    const xStatelessClose = decodedToken['x-stateless-close'];
+
+    // Salvar as informações como variáveis de ambiente
+    pm.environment.set("xStatelessOpen", xStatelessOpen);
+    pm.environment.set("xStatelessClose", xStatelessClose);
+} else {
+    console.log("Bearer token not found in environment variables");
+}
