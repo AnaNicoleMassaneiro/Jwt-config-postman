@@ -1,0 +1,77 @@
+
+Claro! Aqui estão os passos detalhados para chegar nas abas e configurar tudo no Postman:
+
+### Passo 1: Abrir o Postman e Selecionar a Requisição
+
+1. **Abrir o Postman:** Inicie o Postman no seu computador.
+2. **Selecionar ou Criar uma Requisição:** Escolha a requisição onde você quer automatizar o processo ou crie uma nova.
+
+### Passo 2: Configurar o Script de Pré-Requisição
+
+1. **Abrir a Requisição:** Clique na requisição que você deseja configurar.
+2. **Ir para a Aba "Pre-request Script":**
+   - No topo da janela de requisição, você verá várias abas como `Params`, `Authorization`, `Headers`, `Body`, etc.
+   - Clique na aba `Pre-request Script`.
+
+3. **Adicionar o Script:**
+   - Cole o seguinte script na área de texto da aba `Pre-request Script`:
+
+     ```javascript
+     const jwtDecode = require('jwt-decode');
+
+     // Supondo que o seu Bearer token está salvo em uma variável de ambiente chamada "bearerToken"
+     const bearerToken = pm.environment.get("bearerToken");
+
+     // Verificar se a biblioteca jwt-decode está carregada
+     if (typeof jwtDecode !== 'function') {
+         throw new Error("jwt-decode library not loaded.");
+     }
+
+     // Decodificar o token
+     const decodedToken = jwtDecode(bearerToken);
+
+     // Extrair as informações necessárias
+     const xStatelessOpen = decodedToken['x-stateless-open'];
+     const xStatelessClose = decodedToken['x-stateless-close'];
+
+     // Salvar as informações como variáveis de ambiente
+     pm.environment.set("xStatelessOpen", xStatelessOpen);
+     pm.environment.set("xStatelessClose", xStatelessClose);
+     ```
+
+### Passo 3: Configurar os Headers
+
+1. **Ir para a Aba "Headers":**
+   - Ainda na mesma requisição, clique na aba `Headers`.
+
+2. **Adicionar os Headers:**
+   - Adicione os seguintes headers:
+     - Key: `x-stateless-open`, Value: `{{xStatelessOpen}}`
+     - Key: `x-stateless-close`, Value: `{{xStatelessClose}}`
+
+### Passo 4: Configurar as Variáveis de Ambiente
+
+1. **Abrir as Configurações de Ambiente:**
+   - No canto superior direito do Postman, você verá um ícone de olho com o texto `No Environment` ou o nome do ambiente atual.
+   - Clique no ícone e depois clique em `Edit` próximo ao nome do ambiente que você está usando.
+
+2. **Adicionar a Variável `bearerToken`:**
+   - Na janela que aparece, adicione uma nova variável:
+     - Nome: `bearerToken`
+     - Valor: O token JWT que você deseja decodificar.
+   - Clique em `Update` para salvar as mudanças.
+
+### Passo 5: Testar a Requisição
+
+1. **Enviar a Requisição:**
+   - Volte para a requisição que você configurou.
+   - Clique em `Send` para enviar a requisição.
+   
+2. **Verificar os Resultados:**
+   - Se tudo estiver configurado corretamente, o Postman decodificará o JWT, extrairá `x-stateless-open` e `x-stateless-close`, e os usará nos headers da sua requisição.
+
+### Dicas Finais
+
+- Certifique-se de que a biblioteca `jwt-decode` está disponível no Postman. Caso contrário, você pode precisar usar uma função JavaScript personalizada para decodificar o token.
+- As variáveis de ambiente são sensíveis ao caso. Certifique-se de que os nomes das variáveis são exatamente os mesmos nos scripts e nos headers.
+- Se houver algum erro, o console do Postman (abrir com `View` -> `Show Postman Console`) pode ajudar a depurar os scripts.
